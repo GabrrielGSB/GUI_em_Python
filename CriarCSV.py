@@ -20,8 +20,8 @@ def criarGraficoDinamico(csv_file):
         with open(csv_file, mode='r') as file:
             try:
                 last_line = list(csv.DictReader(file))[-1]  # Obtém a última linha
-                ultimo_x = float(last_line['Pontos_no_Eixo_X'])
-                ultimo_y = float(last_line['Pontos_no_Eixo_Y'])
+                ultimo_x  = float(last_line['Pontos_no_Eixo_X'])
+                ultimo_y  = float(last_line['Pontos_no_Eixo_Y'])
 
                 # Adiciona o último ponto aos dados
                 dadosX.append(ultimo_x)
@@ -31,17 +31,17 @@ def criarGraficoDinamico(csv_file):
                 ax.clear()
                 ax.plot(dadosX, dadosY, label='dados', color='blue')
                 ax.set_title("Angle Roll vs Time")
-                ax.set_xlabel("Time (s)")  # Unidades em segundos
+                ax.set_xlabel("Time (s)")
                 ax.set_ylabel("Angle Roll (degrees)")
                 ax.legend()
                 ax.grid(True)
+
             except (ValueError, IndexError, KeyError):
-                # Ignora erros se o arquivo estiver vazio ou com dados inválidos
                 pass
 
     # Configuração do Matplotlib
     fig, ax = plt.subplots()
-    ani = FuncAnimation(fig, atualizarGrafico, interval=25)
+    ani = FuncAnimation(fig, atualizarGrafico, interval=50)
     plt.show()
 
 def escreverCSV(csv_file):
@@ -72,39 +72,45 @@ def escreverCSV(csv_file):
     finally:
         ser.close()
 
-def escreverCSVTeste(arquivoCSV='dados.csv'):
+def escreverCSVTeste(nomeArquivoCSV='Dados/dados.csv'):
     contador = 0
     dados = [0,0]
+    print("ok")
+
+    with open(nomeArquivoCSV, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(['Eixo_X', 'Eixo_Y']) 
 
     while contador < 400:
+        print(contador)
         dados[0] += 0.1  
         dados[1] = sen(dados[0])
        
-        with open(arquivoCSV, mode='a', newline='') as file:
+        with open(nomeArquivoCSV, mode='a', newline='') as file:
             writer = csv.writer(file)
             writer.writerow([round(dados[0],3), round(dados[1],3)])
             file.flush()  
+
         t.sleep(0.1)
+
         contador += 1
 
 if __name__ == "__main__":
     # Gerar um nome de arquivo único com base na data e hora
-    timestamp = datetime.now().strftime("%Y_%m_%d__%H_%M_%S")
-    csv_file = f"dados_{timestamp}.csv"
+    dadosTempo = datetime.now().strftime("%Y_%m_%d__%H_%M_%S")
+    nomeArquivoCSV = f"dados_{dadosTempo}.csv"
 
     # Cria o novo arquivo e escreve o cabeçalho
-    with open(csv_file, mode='w', newline='') as file:
+    with open(nomeArquivoCSV, mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['Pontos_no_Eixo_X', 'Pontos_no_Eixo_Y'])
 
-    # Cria processos
-    p1 = multiprocessing.Process(target=criarGraficoDinamico, args=(csv_file,))
-    p2 = multiprocessing.Process(target=escreverCSVTeste,     args=(csv_file,))
+    # Cria os processos e inicializa eles
+    nucleo1 = multiprocessing.Process(target=escreverCSVTeste,     args=(nomeArquivoCSV,))
+    nucleo2 = multiprocessing.Process(target=criarGraficoDinamico, args=(nomeArquivoCSV,))
 
-    # Inicia processos
-    p1.start()
-    p2.start()
-
-    # Espera os processos terminarem
-    p1.join()
-    p2.join()
+    nucleo1.start()
+    nucleo2.start()
+    
+    nucleo1.join()
+    nucleo2.join()

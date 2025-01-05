@@ -7,21 +7,22 @@ class aba1(QWidget):
     def __init__(self, imagemFundo):
         super().__init__()
 
+        #Definição do plano de fundo 
         self.imagemFundo = imagemFundo
-
         self.planoDeFundo = definirPlanoDeFundo(self.imagemFundo)
         self.planoDeFundo.setGeometry(0, 0, self.width(), self.height())
 
+        #Criação de um layout pai para todos os widgets
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0) 
         self.layout.addWidget(self.planoDeFundo)
 
+        #Definição da caixa de seleção de imagem e aquisição de dados
         self.Selecao = QComboBox()
         self.Selecao.move(50,150)
         self.Selecao.setFixedSize(380, 30)
         self.Selecao.addItems([maquinas[0], maquinas[1], maquinas[2]])
-        # self.Selecao.currentIndexChanged.connect(self.index_changed)
-        self.Selecao.currentTextChanged.connect(self.atualizarImagem)
+        self.Selecao.currentTextChanged.connect(self.mostrarImagemComboBox)
         self.Selecao.setParent(self.planoDeFundo)
         self.Selecao.setStyleSheet("""
                                 QComboBox {
@@ -37,12 +38,13 @@ class aba1(QWidget):
                                     background: white;
                                 }
                                 """)
-        # self.Selecao.show()
 
+        #Definição da imagem atralada a ComboBox
         self.imagemMaquina = QLabel(self.planoDeFundo)
-        self.imagemMaquina.move(650, 50)  # Define a posição da imagem
+        self.imagemMaquina.move(650, 50) 
 
-        self.atualizarImagem(self.Selecao.currentText())
+        #Chamamento da função para mostrar a imagemMaquina a primeira vez 
+        self.mostrarImagemComboBox(self.Selecao.currentText())
 
         #Definição do texto de seleção
         self.texto_label = QLabel("Selecione a máquina para receber dados", self.planoDeFundo)
@@ -73,10 +75,10 @@ class aba1(QWidget):
                                     border: 4px solid white;
                                 }
                                 """)
-        self.botao.clicked.connect(self.ComecarAquisicaoDados)  
-        # self.botao.show()
+        self.botao.clicked.connect(self.executarScript)  
 
-    def atualizarImagem(self, event):
+    #Definição das funções usadas
+    def mostrarImagemComboBox(self, event):
         texto = self.Selecao.currentText()
         if   texto == maquinas[0]:
             caminho_imagem = "Imagens/im.jpg"  
@@ -88,10 +90,37 @@ class aba1(QWidget):
             caminho_imagem = "Imagens/im.jpg"
 
         pixmap = QPixmap(caminho_imagem)
-        self.imagemMaquina.setPixmap(pixmap.scaled(300, 300))  # Ajusta o tamanho da imagem
+        self.imagemMaquina.setPixmap(pixmap.scaled(300, 300)) 
 
-    # def index_changed(self, i): # i is an int
-    #     print("")
+    def executarScript(self):
+        self.processo = QProcess(self)
+        self.processo1 = QProcess(self)
 
-    def ComecarAquisicaoDados(self):
-        escreverCSVTeste() 
+        script_path = "iniciarColetaDados.py"  
+        script_path1 = "plotarDadosColetados.py"
+
+        self.processo.start("python3", [script_path])
+        self.processo1.start("python3", [script_path1])
+
+
+        self.processo.readyReadStandardOutput.connect(self.ler_saida)
+        self.processo.readyReadStandardError.connect(self.ler_erro)
+        self.processo.finished.connect(self.processo_terminou)
+
+        self.processo1.readyReadStandardOutput.connect(self.ler_saida)
+        self.processo1.readyReadStandardError.connect(self.ler_erro)
+        self.processo1.finished.connect(self.processo_terminou)
+
+    def ler_saida(self):
+        # Captura a saída padrão do script Python
+        saida = self.processo.readAllStandardOutput().data().decode()
+        print("Saída do Script:", saida)  # Ou exiba na GUI
+
+    def ler_erro(self):
+        # Captura a saída de erro do script Python
+        erro = self.processo.readAllStandardError().data().decode()
+        print("Erro no Script:", erro)  # Ou exiba na GUI
+
+    def processo_terminou(self):
+        print("O script Python terminou sua execução.")
+   

@@ -9,15 +9,14 @@ def sen(x):
 
 class EscritorCSV:
     def __init__(self, arquivoCSV='dados.csv'):
-        self.arquivo = arquivoCSV
+        self.arquivo  = arquivoCSV
         self.contador = 0
-        self.dados = [0, 0]
+        self.dados    = [0, 0]
 
         # Escreve o cabeçalho no arquivo CSV se ele estiver vazio
         with open(self.arquivo, mode='w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(['Pontos_no_Eixo_X', 'Pontos_no_Eixo_Y'])
-
 
     def escrever(self, count):
         while self.contador < 100_000:
@@ -28,8 +27,10 @@ class EscritorCSV:
                 writer = csv.writer(file)
                 writer.writerow([round(self.dados[0], 3), round(self.dados[1], 3)])
                 file.flush()
+
             t.sleep(0.0001)
-            count.value += + 1
+
+            count.value   += 1
             self.contador += 1
 
 class MonitorCSV:
@@ -62,9 +63,11 @@ class MonitorCSV:
 if __name__ == "__main__":
     csv_file = "dados.csv"
 
-    escritor = EscritorCSV(csv_file)  # Cria o objeto da classe EscritorCSV
-    monitor = MonitorCSV(csv_file)  # Cria o objeto da classe MonitorCSV
+    escritor = EscritorCSV(csv_file)  
+    monitor  = MonitorCSV(csv_file)  
+
     shared_var = multiprocessing.Value('i', 0)  # 'i' significa tipo inteiro
+    
     p1 = multiprocessing.Process(target=escritor.escrever, args=(shared_var,))
     p2 = multiprocessing.Process(target=monitor.monitorar, args=(shared_var,))
 

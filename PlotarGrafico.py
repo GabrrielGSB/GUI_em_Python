@@ -47,8 +47,6 @@ def monitorar_csv(file_path):
             # Pausa para evitar loop contínuo
             t.sleep(1)  # Aguarda 1 segundo antes de verificar novamente o arquivo
 
-
-
 def carregarCSVteste(caminhoArquivo):
     dadosX, dadosY = [], []
 
@@ -63,7 +61,6 @@ def carregarCSVteste(caminhoArquivo):
                 continue
     return dadosX, dadosY
     
-
 # Função para plotar os dados
 def plotarDadosCSV(times, angle_rolls, angle_pitchs):
     print("\n--- Configurações de Plotagem ---")
