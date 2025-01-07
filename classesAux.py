@@ -1,4 +1,6 @@
 from imports import *
+def sen(x): return np.sin(x)
+
 
 class definirPlanoDeFundo(QWidget):
     def __init__(self, caminho):
@@ -25,6 +27,8 @@ class Grafico(FigureCanvas):
         self.fig = Figure(figsize=(8, 6), dpi=100)
         super().__init__(self.fig)
 
+        self.ponteiroLinha = 15
+
         self.graficoMostrado = self.fig.add_subplot(111)
 
         #Cria o timer que vai controlar a taxa de atualização do gráfico e a função atrelada
@@ -39,30 +43,41 @@ class Grafico(FigureCanvas):
         self.graficoMostrado.legend()
        
     def iniciarAtualizacao(self):
-        self.x_data = []
-        self.y_data = []
-        self.timer.start(100)  
+        self.dadosX = []
+        self.dadosY = []
+        self.arquivo = None
+        self.timer.start(25)  
 
     def pararAtualizacao(self):
         self.timer.stop()
     
     def atualizarGrafico(self):
-        if len(self.x_data) > 100:  # Limita o número de pontos no gráfico
-            self.x_data.pop(0)
-            self.y_data.pop(0)
+        with open("Dados/dados.csv", mode='r') as self.arquivo:
+            self.nomeColunas = self.arquivo.readline().strip().split(',')
 
-        novo_x = (self.x_data[-1] + 0.1) if self.x_data else 0
-        novo_y = sen(novo_x)
+            self.arquivo.seek(self.ponteiroLinha, 0)
         
-        self.x_data.append(novo_x)
-        self.y_data.append(novo_y)
 
-        # Atualiza a linha do gráfico
-        self.line.set_data(self.x_data, self.y_data)
-        self.graficoMostrado.set_xlim(max(0, novo_x - 50), novo_x + 1)
-        self.graficoMostrado.set_ylim(-1.5, 1.5)
+            linha = self.arquivo.readline()
 
-        self.draw()
+            self.ponteiroLinha += len(linha)+1
+
+            linha = linha.strip().split(',')
+            print(linha)
+
+            if linha[0] != '':
+                self.dadosX.append(float(linha[0]))
+                self.dadosY.append(float(linha[1]))
+
+                self.line.set_data(self.dadosX, self.dadosY)
+
+                self.graficoMostrado.set_xlim(0, 100)
+                self.graficoMostrado.set_ylim(-1.5, 1.5)
+
+                self.draw()
+            else: 
+                print("todos os dados foram lidos")
+                self.timer.stop()
 
     def atualizarTitulo(self, novoTitulo):
         self.graficoMostrado.set_title(novoTitulo, fontsize=16)
@@ -75,4 +90,5 @@ class Grafico(FigureCanvas):
     def atualizarYlabel(self, novoTexto):
         self.graficoMostrado.set_ylabel(novoTexto, fontsize=12)
         self.draw()
+
 

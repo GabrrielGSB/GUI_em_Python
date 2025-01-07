@@ -22,7 +22,7 @@ def escreverCSVTeste(nomeArquivoCSV='Dados/dados.csv'):
             writer.writerow([round(dados[0],3), round(dados[1],3)])
             file.flush()  
 
-        t.sleep(0.1)
+        t.sleep(0.01)
 
         contador += 1
 

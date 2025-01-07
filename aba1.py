@@ -17,9 +17,16 @@ class aba1(QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0) 
         self.layout.addWidget(self.planoDeFundo)
 
+        #Definição do texto de seleção
+        self.texto_label = QLabel("Selecione a máquina para receber dados", self.planoDeFundo)
+        self.texto_label.move(50, 25)  
+        self.texto_label.setFont(QFont("Arial", 14, QFont.Bold))  
+        self.texto_label.setStyleSheet("color: white;")  
+        self.texto_label.show()
+
         #Definição da caixa de seleção de imagem e aquisição de dados
         self.Selecao = QComboBox()
-        self.Selecao.move(50,150)
+        self.Selecao.move(50,50)
         self.Selecao.setFixedSize(380, 30)
         self.Selecao.addItems([maquinas[0], maquinas[1], maquinas[2]])
         self.Selecao.currentTextChanged.connect(self.mostrarImagemComboBox)
@@ -45,14 +52,7 @@ class aba1(QWidget):
 
         #Chamamento da função para mostrar a imagemMaquina a primeira vez 
         self.mostrarImagemComboBox(self.Selecao.currentText())
-
-        #Definição do texto de seleção
-        self.texto_label = QLabel("Selecione a máquina para receber dados", self.planoDeFundo)
-        self.texto_label.move(50, 100)  
-        self.texto_label.setFont(QFont("Arial", 14, QFont.Bold))  
-        self.texto_label.setStyleSheet("color: white;")  
-        self.texto_label.show()
-
+       
         #Definição do botão utilizado
         self.botao = QPushButton("Inicializar Coleta de Dados", self.planoDeFundo)
         self.botao.move(50, 300)  
@@ -75,7 +75,8 @@ class aba1(QWidget):
                                     border: 4px solid white;
                                 }
                                 """)
-        self.botao.clicked.connect(self.executarScript)  
+        self.botao.clicked.connect(self.executarScript)
+        self.botao.clicked.connect(self.mostrarGrafico) 
 
     #Definição das funções usadas
     def mostrarImagemComboBox(self, event):
@@ -92,24 +93,38 @@ class aba1(QWidget):
         pixmap = QPixmap(caminho_imagem)
         self.imagemMaquina.setPixmap(pixmap.scaled(300, 300)) 
 
+    def mostrarGrafico(self):
+            self.janelaGrafico = None
+            
+            if not self.janelaGrafico:
+                self.janelaGrafico = JanelaGrafico()
+
+            novoTitulo = "Dados em Tempo Real"
+            novaXlabel = "número do dado"
+            novaYlabel = "valor do dado"
+
+            if novoTitulo: self.janelaGrafico.grafico.atualizarTitulo(novoTitulo)
+            if novaXlabel: self.janelaGrafico.grafico.atualizarXlabel(novaXlabel)
+            if novaYlabel: self.janelaGrafico.grafico.atualizarYlabel(novaYlabel)
+
+            self.janelaGrafico.grafico.iniciarAtualizacao()
+            self.janelaGrafico.show()
+
+            t.sleep(1)
+            self.janelaGrafico.grafico.atualizarGrafico()
+
+
     def executarScript(self):
         self.processo = QProcess(self)
-        self.processo1 = QProcess(self)
 
         script_path = "iniciarColetaDados.py"  
-        script_path1 = "plotarDadosColetados.py"
+  
 
         self.processo.start("python3", [script_path])
-        self.processo1.start("python3", [script_path1])
-
 
         self.processo.readyReadStandardOutput.connect(self.ler_saida)
         self.processo.readyReadStandardError.connect(self.ler_erro)
         self.processo.finished.connect(self.processo_terminou)
-
-        self.processo1.readyReadStandardOutput.connect(self.ler_saida)
-        self.processo1.readyReadStandardError.connect(self.ler_erro)
-        self.processo1.finished.connect(self.processo_terminou)
 
     def ler_saida(self):
         # Captura a saída padrão do script Python

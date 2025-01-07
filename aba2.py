@@ -73,7 +73,7 @@ class aba2(QWidget):
  
         # Botão para abrir o gráfico em uma nova janela
         self.botao_grafico = QPushButton("Mostrar Gráfico", self.planoDeFundo)
-        self.botao_grafico.move(50, 500)
+        self.botao_grafico.move(50, 300)
         self.botao_grafico.setFixedSize(150, 50)
         self.botao_grafico.setStyleSheet("""
                                          QPushButton {
@@ -88,6 +88,7 @@ class aba2(QWidget):
                                          }
                                          """)
         self.botao_grafico.clicked.connect(self.mostrarGrafico)
+        # self.botao_grafico.clicked.connect(self.executarScript)
 
     def mostrarGrafico(self):
         self.janelaGrafico = None
@@ -105,3 +106,6 @@ class aba2(QWidget):
 
         self.janelaGrafico.grafico.iniciarAtualizacao()
         self.janelaGrafico.show()
+        self.janelaGrafico.grafico.atualizarGrafico()
+
+    
