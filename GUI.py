@@ -14,7 +14,7 @@ class MainWindow(QMainWindow):
     tabs.setTabPosition(QTabWidget.North)
     tabs.setMovable(False)
 
-    tabs.addTab(aba1("Imagens/im1.png"), "aba2")
+    tabs.addTab(aba1("Imagens/im1.png"), "aba1")
     tabs.addTab(aba2("Imagens/im1.png"), "aba2")
     self.setCentralWidget(tabs)
 

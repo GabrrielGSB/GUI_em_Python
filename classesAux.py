@@ -27,7 +27,7 @@ class Grafico(FigureCanvas):
         self.fig = Figure(figsize=(8, 6), dpi=100)
         super().__init__(self.fig)
 
-        self.ponteiroLinha = 15
+        self.ponteiroLinha = 26
 
         self.graficoMostrado = self.fig.add_subplot(111)
 
@@ -41,43 +41,61 @@ class Grafico(FigureCanvas):
         self.graficoMostrado.grid()
         self.line, = self.graficoMostrado.plot([], [], label="Dados", color="blue", linewidth=1)
         self.graficoMostrado.legend()
+        self.stop = False
+        self.arquivoAtual = None
        
     def iniciarAtualizacao(self):
         self.dadosX = []
         self.dadosY = []
         self.arquivo = None
-        self.timer.start(25)  
+        self.procurarCSV()
+        self.timer.start(10)  
 
     def pararAtualizacao(self):
         self.timer.stop()
+
+    def procurarCSV(self):
+        pasta = "Dados"
+        arquivos = [os.path.join(pasta, f) for f in os.listdir(pasta) if f.endswith('.csv')]
+        
+        if not arquivos:
+            return  # Se não houver arquivos, nada será feito
+
+        arquivoMaisRecente = max(arquivos, key=os.path.getmtime)
+        
+        # Abrir um novo arquivo caso o mais recente tenha mudado
+        if self.arquivoAtual != arquivoMaisRecente:
+            self.arquivoAtual = arquivoMaisRecente
     
     def atualizarGrafico(self):
-        with open("Dados/dados.csv", mode='r') as self.arquivo:
+        with open(self.arquivoAtual, mode='r') as self.arquivo:
             self.nomeColunas = self.arquivo.readline().strip().split(',')
-
             self.arquivo.seek(self.ponteiroLinha, 0)
         
-
             linha = self.arquivo.readline()
-
             self.ponteiroLinha += len(linha)+1
 
             linha = linha.strip().split(',')
-            print(linha)
 
-            if linha[0] != '':
-                self.dadosX.append(float(linha[0]))
-                self.dadosY.append(float(linha[1]))
+            if (linha[0] != ''):
+                self.stop == True
+                self.dadosX.append(int(linha[2]))
+                self.dadosY.append(float(linha[0]))
+
+                if (len(self.dadosX) >= 300):
+                    self.dadosX.pop(0)
+                    self.dadosY.pop(0)
 
                 self.line.set_data(self.dadosX, self.dadosY)
 
-                self.graficoMostrado.set_xlim(0, 100)
-                self.graficoMostrado.set_ylim(-1.5, 1.5)
+                self.graficoMostrado.set_xlim(self.dadosX[0], self.dadosX[-1]+100)
+                self.graficoMostrado.set_ylim(-90, 90)
 
                 self.draw()
-            else: 
-                print("todos os dados foram lidos")
-                self.timer.stop()
+
+            # elif self.stop == True:
+            #     print("todos os dados foram lidos")
+            #     self.timer.stop()
 
     def atualizarTitulo(self, novoTitulo):
         self.graficoMostrado.set_title(novoTitulo, fontsize=16)

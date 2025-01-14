@@ -76,8 +76,8 @@ class aba1(QWidget):
                                 }
                                 """)
         self.botao.clicked.connect(self.executarScript)
-        self.botao.clicked.connect(self.mostrarGrafico) 
-
+        self.botao.clicked.connect(self.mostrarGrafico)
+        
     #Definição das funções usadas
     def mostrarImagemComboBox(self, event):
         texto = self.Selecao.currentText()
@@ -107,10 +107,9 @@ class aba1(QWidget):
             if novaXlabel: self.janelaGrafico.grafico.atualizarXlabel(novaXlabel)
             if novaYlabel: self.janelaGrafico.grafico.atualizarYlabel(novaYlabel)
 
+            t.sleep(2)
             self.janelaGrafico.grafico.iniciarAtualizacao()
             self.janelaGrafico.show()
-
-            t.sleep(1)
             self.janelaGrafico.grafico.atualizarGrafico()
 
 

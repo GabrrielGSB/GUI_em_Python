@@ -1,5 +1,9 @@
 from imports import *
 from classesAux import *
+import pandas as pd
+import matplotlib.pyplot as plt
+from PyQt5.QtWidgets import QFileDialog
+
 
 class aba2(QWidget):
     def __init__(self, imagemFundo):
@@ -10,16 +14,16 @@ class aba2(QWidget):
         self.planoDeFundo = definirPlanoDeFundo(self.imagemFundo)
         self.planoDeFundo.setGeometry(0, 0, self.width(), self.height())
 
-        #Criação de um layout pai para todos os widgets
+        # Criação de um layout pai para todos os widgets
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.planoDeFundo)
 
-        #Definição do texto explicação
+        # Definição do texto explicação
         self.texto_label = QLabel("Nomeie o gráficos e seus eixos", self.planoDeFundo)
-        self.texto_label.move(50, 80)  
-        self.texto_label.setFont(QFont("Arial", 14, QFont.Bold))  
-        self.texto_label.setStyleSheet("color: white;")  
+        self.texto_label.move(50, 80)
+        self.texto_label.setFont(QFont("Arial", 14, QFont.Bold))
+        self.texto_label.setStyleSheet("color: white;")
         self.texto_label.show()
 
         # Caixas de textos para alterar os textos do gráfico
@@ -53,8 +57,8 @@ class aba2(QWidget):
                                         QLineEdit:focus {
                                             border-color: blue;
                                         }
-                                        """)        
-        
+                                        """)
+
         self.tituloYlabel = QLineEdit(self.planoDeFundo)
         self.tituloYlabel.setPlaceholderText("Digite o nome do eixo Y")
         self.tituloYlabel.move(50, 220)
@@ -70,11 +74,11 @@ class aba2(QWidget):
                                             border-color: blue;
                                         }
                                         """)
- 
+
         # Botão para abrir o gráfico em uma nova janela
-        self.botao_grafico = QPushButton("Mostrar Gráfico", self.planoDeFundo)
+        self.botao_grafico = QPushButton("Selecionar e Mostrar Gráfico", self.planoDeFundo)
         self.botao_grafico.move(50, 300)
-        self.botao_grafico.setFixedSize(150, 50)
+        self.botao_grafico.setFixedSize(200, 50)
         self.botao_grafico.setStyleSheet("""
                                          QPushButton {
                                             background-color: blue;
@@ -87,25 +91,39 @@ class aba2(QWidget):
                                             background-color: lightblue;
                                          }
                                          """)
-        self.botao_grafico.clicked.connect(self.mostrarGrafico)
-        # self.botao_grafico.clicked.connect(self.executarScript)
+        self.botao_grafico.clicked.connect(self.selecionar_e_mostrar_grafico)
 
-    def mostrarGrafico(self):
-        self.janelaGrafico = None
-        
-        if not self.janelaGrafico:
-            self.janelaGrafico = JanelaGrafico()
+    def selecionar_e_mostrar_grafico(self):
+        # Abrir o diálogo para selecionar arquivos CSV
+        options = QFileDialog.Options()
+        options |= QFileDialog.ReadOnly
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Selecione um Arquivo CSV", "", "CSV Files (*.csv);;All Files (*)", options=options
+        )
 
-        novoTitulo = self.tituloGrafico.text()
-        novaXlabel = self.tituloXlabel.text()
-        novaYlabel = self.tituloYlabel.text()
+        if file_path:
+            try:
+                # Ler o arquivo CSV
+                data = pd.read_csv(file_path)
+                if data.shape[1] < 2:
+                    self.texto_label.setText("O arquivo precisa ter pelo menos 2 colunas.")
+                    return
 
-        if novoTitulo: self.janelaGrafico.grafico.atualizarTitulo(novoTitulo)
-        if novaXlabel: self.janelaGrafico.grafico.atualizarXlabel(novaXlabel)
-        if novaYlabel: self.janelaGrafico.grafico.atualizarYlabel(novaYlabel)
+                # Obter os textos do gráfico
+                titulo = self.tituloGrafico.text() or "Gráfico dos Dados"
+                xlabel = self.tituloXlabel.text() or "X"
+                ylabel = self.tituloYlabel.text() or "Y"
 
-        self.janelaGrafico.grafico.iniciarAtualizacao()
-        self.janelaGrafico.show()
-        self.janelaGrafico.grafico.atualizarGrafico()
+                # Plotar os dados
+                plt.figure(figsize=(8, 6))
+                plt.plot(data.iloc[:, 2], data.iloc[:, 0], label="Y vs X")
+                plt.xlabel(xlabel)
+                plt.ylabel(ylabel)
+                plt.title(titulo)
+                plt.legend()
+                plt.grid()
+                plt.show()
 
-    
+                self.texto_label.setText("Gráfico plotado com sucesso!")
+            except Exception as e:
+                self.texto_label.setText(f"Erro ao processar o arquivo: {str(e)}")

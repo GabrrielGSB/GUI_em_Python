@@ -2,29 +2,43 @@ from imports import *
 
 def sen(x): return np.sin(x)
 
-# Função que simula um processo demorado
-def escreverCSVTeste(nomeArquivoCSV='Dados/dados.csv'):
-    contador = 0
-    dados = [0,0]
-    print("ok")
+def escreverCSV(csv_file):
+    ser = serial.Serial('COM4', 115200)  # Configuração da porta serial
 
-    with open(nomeArquivoCSV, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(['Eixo_X', 'Eixo_Y']) 
+    try:
+        while ser.is_open:
+            line = ser.readline().decode('utf-8').split(',')
 
-    while contador < 400:
-        print(contador)
-        dados[0] += 0.1  
-        dados[1] = sen(dados[0])
-       
-        with open(nomeArquivoCSV, mode='a', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow([round(dados[0],3), round(dados[1],3)])
-            file.flush()  
+            try:
+                # Extração de valores
+                angleRoll  = line[0].split(':')[1].strip()
+                anglePitch = line[1].split(':')[1].strip()
+                tempo      = line[2].split(':')[1].strip()
 
-        t.sleep(0.01)
+                # Escreve os dados no CSV
+                with open(csv_file, mode='a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow([angleRoll, anglePitch, tempo])
+                    file.flush()  
 
-        contador += 1
+            except Exception as e:
+                print("Erro ao processar linha:", e)
+
+    except KeyboardInterrupt:
+        print("Finalizando...")
+    finally:
+        ser.close()
+
 
 if __name__ == "__main__":
-    escreverCSVTeste()
+    
+    dadosTempo = datetime.now().strftime("%Y_%m_%d__%H_%M_%S")
+    nomeArquivoCSV = f"Dados/dados_{dadosTempo}.csv"
+    # nomeArquivoCSV = 'Dados/dados.csv'
+
+    # Cria o novo arquivo e escreve o cabeçalho
+    with open(nomeArquivoCSV, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['AngleRoll', 'AnglePitch', 'Tempo'])
+
+    escreverCSV(nomeArquivoCSV)
