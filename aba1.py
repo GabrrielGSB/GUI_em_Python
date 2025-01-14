@@ -107,7 +107,7 @@ class aba1(QWidget):
             if novaXlabel: self.janelaGrafico.grafico.atualizarXlabel(novaXlabel)
             if novaYlabel: self.janelaGrafico.grafico.atualizarYlabel(novaYlabel)
 
-            t.sleep(2)
+            t.sleep(2.5)
             self.janelaGrafico.grafico.iniciarAtualizacao()
             self.janelaGrafico.show()
             self.janelaGrafico.grafico.atualizarGrafico()
