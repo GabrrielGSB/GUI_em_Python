@@ -26,8 +26,10 @@ const uint8_t port = 80;
 
 struct sensorData 
 { 
-  float angleRoll,anglePitch, kalmanAngleRoll, kalmanAnglePitch; 
+  float angleRoll,anglePitch, kalmanAngleRoll, kalmanAnglePitch, deslocamento; 
 };
+
+
 
 void setup() 
 {
@@ -42,17 +44,18 @@ void loop()
 {
   MPUgetSignalsLoop();
 
+  float analog = analogRead(4);
+
   // Aplica o filtro nos angulos Roll e Pitch
   Kalman1D(kalmanAngleRoll,  KalmanUncertaintyAngleRoll,  RateRoll,  AngleRoll);  
   Kalman1D(kalmanAnglePitch, KalmanUncertaintyAnglePitch, RatePitch, AnglePitch);
 
  WiFiClient client = server.available();
-  if (client)                                       // Checa se o servidor está disponível e se conecta nele
+  if (client)                                       
   {
-      sensorData dados = {AngleRoll, AnglePitch, kalmanAngleRoll, kalmanAnglePitch};    // Definição dos dados a serem enviados
-      client.write((uint8_t*)&dados, sizeof(dados)); // Envio dos dados a cada t ms -> (delay(t))
-      // delay(100);     
-      Serial.println(kalmanAngleRoll);                           
+      sensorData dados = {AngleRoll, AnglePitch, kalmanAngleRoll, kalmanAnglePitch, analog};    
+      client.write((uint8_t*)&dados, sizeof(dados)); 
+      // delay(100);                              
   }
   else delay(10);                                    
 }

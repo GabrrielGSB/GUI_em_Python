@@ -27,7 +27,7 @@ class Grafico(FigureCanvas):
         self.fig = Figure(figsize=(8, 6), dpi=100)
         super().__init__(self.fig)
 
-        self.ponteiroLinha = 26
+        self.ponteiroLinha = 72
 
         self.graficoMostrado = self.fig.add_subplot(111)
 
@@ -79,7 +79,7 @@ class Grafico(FigureCanvas):
 
             if (linha[0] != ''):
                 self.stop == True
-                self.dadosX.append(int(linha[2]))
+                self.dadosX.append(int(linha[-1]))
                 self.dadosY.append(float(linha[0]))
 
                 if (len(self.dadosX) >= 300):
