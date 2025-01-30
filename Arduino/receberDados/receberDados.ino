@@ -5,7 +5,7 @@ const char *password = "123456789";
 const char *host     = "192.168.4.1"; 
 const uint8_t port   =  80;
 
-struct sensorData { float AngleRoll,AnglePitch,kalmanAngleRoll,kalmanAnglePitch; };
+struct sensorData { float AngleRoll,AnglePitch,kalmanAngleRoll,kalmanAnglePitch,deslocamento; };
 
 WiFiClient client;
 
@@ -17,7 +17,7 @@ void setup()
 
 void loop() 
 {
-  receberDados(100);
+  receberDados();
 }
 
 void conectarServidor()
@@ -33,7 +33,7 @@ void conectarServidor()
   Serial.println("Conectado ao Wi-Fi");
 }
 
-void receberDados(uint16_t intervalo)
+void receberDados()
 {
   if (client.connect(host, port)) 
   { 
@@ -43,16 +43,15 @@ void receberDados(uint16_t intervalo)
     // Ler dados binários
     sensorData dadosRecebidos;
     client.read((uint8_t*)&dadosRecebidos, sizeof(dadosRecebidos));
-    Serial.printf(dadosRecebidos.kalmanAngleRoll);
+ 
     // Exibir os dados recebidos
-    // Serial.printf("AngleRoll: %f, AnglePitch: %f, kalmanAngleRoll: %f, kalmanAnglePitch: %f, Tempo: %d \n",
-    //               dadosRecebidos.AngleRoll,
-    //               dadosRecebidos.AnglePitch,
-    //               dadosRecebidos.kalmanAngleRoll,
-    //               dadosRecebidos.kalmanAngleRoll,
-    //               millis());
-    
-    // delay(intervalo); // Aguarde antes de tentar novamente
+    Serial.printf("AngleRoll: %f, AnglePitch: %f, kalmanAngleRoll: %f, kalmanAnglePitch: %f, deslocamento: %f, Tempo: %d \n",
+                   dadosRecebidos.AngleRoll,
+                   dadosRecebidos.AnglePitch,
+                   dadosRecebidos.kalmanAngleRoll,
+                   dadosRecebidos.kalmanAnglePitch,
+                   dadosRecebidos.deslocamento,
+                   millis());
   }
   else
   { 
