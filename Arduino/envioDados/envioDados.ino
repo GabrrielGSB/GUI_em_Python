@@ -3,6 +3,8 @@
 #include <Adafruit_Sensor.h>
 #include "WiFi.h"
 
+#define sensorDeslocamento 33
+
 float KalmanGain, kalmanAngleRoll, KalmanUncertaintyAngleRoll, 
       kalmanAnglePitch, KalmanUncertaintyAnglePitch, 
       RateCalibrationRoll, RateCalibrationPitch, RateCalibrationYaw,
@@ -26,12 +28,14 @@ const uint8_t port = 80;
 
 struct sensorData 
 { 
-  float angleRoll,anglePitch, kalmanAngleRoll, kalmanAnglePitch; 
+  float angleRoll,anglePitch, kalmanAngleRoll, kalmanAnglePitch, deslocamento; 
 };
 
 void setup() 
 {
   Serial.begin(115200);
+  pinMode(sensorDeslocamento, INPUT);
+  
   MPUconfigSetup();
   iniciarServidor();
   CalibrarMPU();  
@@ -41,20 +45,23 @@ void setup()
 void loop() 
 {
   MPUgetSignalsLoop();
+  
+  int analog = analogRead(sensorDeslocamento);
 
   // Aplica o filtro nos angulos Roll e Pitch
   Kalman1D(kalmanAngleRoll,  KalmanUncertaintyAngleRoll,  RateRoll,  AngleRoll);  
   Kalman1D(kalmanAnglePitch, KalmanUncertaintyAnglePitch, RatePitch, AnglePitch);
 
- WiFiClient client = server.available();
-  if (client)                                       // Checa se o servidor está disponível e se conecta nele
+  WiFiClient client = server.available();
+  if (client)                                       
   {
-      sensorData dados = {AngleRoll, AnglePitch, kalmanAngleRoll, kalmanAnglePitch};    // Definição dos dados a serem enviados
-      client.write((uint8_t*)&dados, sizeof(dados)); // Envio dos dados a cada t ms -> (delay(t))
-      // delay(100);     
-      Serial.println(kalmanAngleRoll);                           
+      sensorData dados = {AngleRoll, AnglePitch, kalmanAngleRoll, kalmanAnglePitch, analog};    
+      client.write((uint8_t*)&dados, sizeof(dados)); 
+      // delay(100);                              
   }
-  else delay(10);                                    
+  else delay(10);   
+      
+  delay(1);                             
 }
 
 void iniciarServidor()
@@ -66,6 +73,7 @@ void iniciarServidor()
   Serial.println("Server started");
   Serial.print("IP address: ");
   Serial.println(WiFi.softAPIP());
+  
 }
 
 void MPUconfigSetup() 
@@ -101,7 +109,7 @@ void MPUgetSignalsLoop()
   AngleRoll  =  atan(AceY/sqrt(AceX*AceX + AceZ*AceZ))*1/(3.142/180);
   AnglePitch = -atan(AceX/sqrt(AceY*AceY + AceZ*AceZ))*1/(3.142/180);
   
-  if (calibration = true){
+  if (calibration == true){
   RateRoll  -= (RateCalibrationRoll/2000)  - 1.2;
   RatePitch -= (RateCalibrationPitch/2000) - 1.5;
   RateYaw   -= (RateCalibrationYaw/2000)   - 0;
